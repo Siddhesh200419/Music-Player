@@ -1,6 +1,6 @@
 import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter, useSegments } from "expo-router";
 import { Music, Pause, Play, SkipForward } from "lucide-react-native";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -11,6 +11,11 @@ export default function MiniPlayer() {
   const isDark = colorScheme === "dark";
   const router = useRouter();
   const pathname = usePathname();
+  const segments = useSegments();
+
+  // If we are essentially inside the bottom tabs layout, we need to lift it up 60px
+  const isTabBarScreen = segments[0] === "(tabs)";
+  const bottomPosition = isTabBarScreen ? 60 : 0;
 
   // Don't show MiniPlayer on the full player screen
   if (!currentSong || pathname === "/player") return null;
@@ -29,7 +34,10 @@ export default function MiniPlayer() {
     <TouchableOpacity
       style={[
         styles.container,
-        { backgroundColor: isDark ? "#1E1E1E" : "#F5F5F5" },
+        { 
+          backgroundColor: isDark ? "#1E1E1E" : "#F5F5F5",
+          bottom: bottomPosition 
+        },
       ]}
       onPress={() => router.push("/player")}
       activeOpacity={0.9}
@@ -77,19 +85,20 @@ export default function MiniPlayer() {
               isPlaying ? pauseSong() : resumeSong();
             }}
           >
-            {isPlaying ? (
-              <Pause
-                size={24}
-                color={isDark ? "#FFFFFF" : "#000000"}
-                fill={isDark ? "#FFFFFF" : "#000000"}
-              />
-            ) : (
-              <Play
-                size={24}
-                color={isDark ? "#FFFFFF" : "#000000"}
-                fill={isDark ? "#FFFFFF" : "#000000"}
-              />
-            )}
+            <View style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: isPlaying ? "#FFE8D6" : "#FF8216",
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              {isPlaying ? (
+                <Pause size={14} color="#FF8216" fill="#FF8216" />
+              ) : (
+                <Play size={14} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 3 }} />
+              )}
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.skipButton}
@@ -110,7 +119,6 @@ export default function MiniPlayer() {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 60, // Positioned above the bottom tabs (tab height is 60)
     left: 0,
     right: 0,
     height: 60,

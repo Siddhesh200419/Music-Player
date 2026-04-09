@@ -1,15 +1,26 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { MoreVertical, User } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import {
+  ArrowRightCircle,
+  ListPlus,
+  MoreVertical,
+  PlayCircle,
+  PlusCircle,
+  Send,
+  User,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function HomeArtists() {
@@ -17,6 +28,17 @@ export default function HomeArtists() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const router = useRouter();
+
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [selectedActionArtist, setSelectedActionArtist] = useState<any>(null);
+
+  // Dynamic colors based on theme
+  const modalBg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const modalText = isDark ? "#FFFFFF" : "#000000";
+  const modalSubText = isDark ? "#9E9E9E" : "#616161";
+  const modalDivider = isDark ? "#2A2A2A" : "#F0F0F0";
+  const modalDragHandle = isDark ? "#444444" : "#D3D3D3";
 
   useEffect(() => {
     fetchArtists();
@@ -43,7 +65,20 @@ export default function HomeArtists() {
     const displayName = item.name || item.title || "Unknown Artist";
 
     return (
-      <TouchableOpacity style={styles.artistItem}>
+      <TouchableOpacity 
+        style={styles.artistItem}
+        onPress={() => {
+          router.push({
+            pathname: "/artist/[id]",
+            params: {
+              id: item.id || displayName,
+              name: displayName,
+              image: typeof imageUrl === 'string' ? imageUrl : '',
+              detailText: "1 Album  |  20 Songs  |  01:25:43 mins"
+            }
+          });
+        }}
+      >
         {imageUrl && typeof imageUrl === 'string' ? (
           <Image source={{ uri: imageUrl }} style={styles.artistImage} />
         ) : (
@@ -80,7 +115,14 @@ export default function HomeArtists() {
             {item.role ? item.role.charAt(0).toUpperCase() + item.role.slice(1) : "Artist"}
           </Text>
         </View>
-        <TouchableOpacity style={styles.moreButton}>
+        <TouchableOpacity 
+          style={styles.moreButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            setSelectedActionArtist(item);
+            setActionModalVisible(true);
+          }}
+        >
           <MoreVertical size={20} color={isDark ? "#9E9E9E" : "#616161"} />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -118,6 +160,71 @@ export default function HomeArtists() {
         keyExtractor={(item, index) => item.id || index.toString()}
         contentContainerStyle={styles.listContent}
       />
+
+      {/* Action Bottom Sheet Modal */}
+      <Modal visible={actionModalVisible} transparent animationType="slide">
+        <TouchableOpacity
+          style={styles.actionModalOverlay}
+          activeOpacity={1}
+          onPress={() => setActionModalVisible(false)}
+        >
+          <View style={[styles.actionModalContent, { backgroundColor: modalBg }]}>
+            <View style={[styles.actionModalDragHandle, { backgroundColor: modalDragHandle }]} />
+
+            {selectedActionArtist && (
+              <View style={styles.actionModalHeader}>
+                {selectedActionArtist.image?.[2]?.url || selectedActionArtist.image?.[1]?.url || selectedActionArtist.image?.[0]?.url || typeof selectedActionArtist.image === 'string' ? (
+                  <Image
+                    source={{ uri: selectedActionArtist.image?.[2]?.url || selectedActionArtist.image?.[1]?.url || selectedActionArtist.image?.[0]?.url || selectedActionArtist.image }}
+                    style={styles.actionModalImage}
+                  />
+                ) : (
+                  <View style={[styles.actionModalImage, { backgroundColor: "#333", justifyContent: "center", alignItems: "center" }]}>
+                    <User size={30} color="#666" />
+                  </View>
+                )}
+                <View style={styles.actionModalInfo}>
+                  <Text style={[styles.actionModalTitle, { color: modalText }]} numberOfLines={1}>
+                    {selectedActionArtist.name || selectedActionArtist.title || "Unknown Artist"}
+                  </Text>
+                  <Text style={[styles.actionModalArtist, { color: modalSubText }]} numberOfLines={1}>
+                    1 Album | 20 Songs
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <View style={[styles.actionModalDivider, { backgroundColor: modalDivider }]} />
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TouchableOpacity style={styles.actionModalItem}>
+                <PlayCircle size={24} color={modalText} />
+                <Text style={[styles.actionModalText, { color: modalText }]}>Play</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionModalItem}>
+                <ArrowRightCircle size={24} color={modalText} />
+                <Text style={[styles.actionModalText, { color: modalText }]}>Play Next</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionModalItem}>
+                <ListPlus size={24} color={modalText} />
+                <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playing Queue</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionModalItem}>
+                <PlusCircle size={24} color={modalText} />
+                <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playlist</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionModalItem}>
+                <Send size={24} color={modalText} />
+                <Text style={[styles.actionModalText, { color: modalText }]}>Share</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -174,5 +281,61 @@ const styles = StyleSheet.create({
   },
   moreButton: {
     padding: 8,
+  },
+  actionModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionModalContent: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    paddingBottom: 40,
+    maxHeight: '80%',
+  },
+  actionModalDragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  actionModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  actionModalImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30, // Fully circular for artists
+  },
+  actionModalInfo: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  actionModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  actionModalArtist: {
+    fontSize: 13,
+  },
+  actionModalDivider: {
+    height: 1,
+    width: '100%',
+    marginBottom: 10,
+  },
+  actionModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+  },
+  actionModalText: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 15,
   },
 });

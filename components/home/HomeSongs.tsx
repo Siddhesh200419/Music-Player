@@ -151,11 +151,20 @@ export default function HomeSongs() {
             }
           }}
         >
-          {isCurrentSong && isPlaying ? (
-            <Pause size={20} color="#FF8216" fill="#FF8216" />
-          ) : (
-            <Play size={20} color="#FF8216" fill="#FF8216" />
-          )}
+          <View style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: isCurrentSong && isPlaying ? "#FFE8D6" : "#FF8216",
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            {isCurrentSong && isPlaying ? (
+              <Pause size={14} color="#FF8216" fill="#FF8216" />
+            ) : (
+              <Play size={14} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.moreButton}
