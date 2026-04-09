@@ -1,6 +1,6 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import {
   ArrowRightCircle,
   ListPlus,
@@ -28,7 +28,7 @@ export default function HomeArtists() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const router = useRouter();
+  const navigation = useNavigation<any>();
 
   const [actionModalVisible, setActionModalVisible] = useState(false);
   const [selectedActionArtist, setSelectedActionArtist] = useState<any>(null);
@@ -67,17 +67,12 @@ export default function HomeArtists() {
     return (
       <TouchableOpacity 
         style={styles.artistItem}
-        onPress={() => {
-          router.push({
-            pathname: "/artist/[id]",
-            params: {
-              id: item.id || displayName,
-              name: displayName,
-              image: typeof imageUrl === 'string' ? imageUrl : '',
-              detailText: "1 Album  |  20 Songs  |  01:25:43 mins"
-            }
-          });
-        }}
+        onPress={() => navigation.navigate("Artist", {
+          id: item.id,
+          name: item.title || item.name,
+          image: typeof imageUrl === 'string' ? imageUrl : '',
+          detailText: "1 Album | 20 Songs | 01:25:43 mins"
+        })}
       >
         {imageUrl && typeof imageUrl === 'string' ? (
           <Image source={{ uri: imageUrl }} style={styles.artistImage} />

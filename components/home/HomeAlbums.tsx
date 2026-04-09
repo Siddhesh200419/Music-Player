@@ -1,6 +1,6 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { Disc, MoreVertical } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -22,7 +22,7 @@ export default function HomeAlbums() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const router = useRouter();
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     fetchAlbums();
@@ -47,14 +47,11 @@ export default function HomeAlbums() {
       <TouchableOpacity 
         style={styles.albumItem}
         onPress={() => {
-          router.push({
-            pathname: "/album/[id]",
-            params: {
-              id: item.id || item.title || item.name,
-              name: item.title || item.name,
-              image: typeof imageUrl === 'string' ? imageUrl : '',
-              detailText: `${item.music || item.primaryArtists || "Unknown"} | ${item.year || "2023"}`
-            }
+          navigation.navigate("Album", {
+            id: item.id || item.title || item.name,
+            name: item.title || item.name,
+            image: typeof imageUrl === 'string' ? imageUrl : '',
+            detailText: `${item.music || item.primaryArtists || "Unknown"} | ${item.year || "2023"}`
           });
         }}
       >

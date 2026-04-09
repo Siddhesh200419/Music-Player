@@ -1,8 +1,8 @@
 import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useNavigation } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
 import {
     Cast,
     ChevronDown,
@@ -40,7 +40,7 @@ export default function PlayerScreen() {
   } = useMusic();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const router = useRouter();
+  const navigation = useNavigation();
 
   if (!currentSong) return null;
 
@@ -70,7 +70,7 @@ export default function PlayerScreen() {
     >
       <View style={styles.statusBarPadding} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <ChevronDown size={28} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
         <TouchableOpacity>

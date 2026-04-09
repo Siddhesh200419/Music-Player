@@ -3,7 +3,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { 
   ArrowLeft, ArrowRightCircle, ChevronLeft, Disc, Heart, Info, ListPlus, 
   MoreHorizontal, MoreVertical, Music, Pause, PhoneCall, 
@@ -39,7 +39,7 @@ export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
-  const router = useRouter();
+  const navigation = useNavigation<any>();
 
   // Action Modal State
   const [actionModalVisible, setActionModalVisible] = useState(false);
@@ -123,12 +123,12 @@ export default function SearchScreen() {
 
   const handleSongPress = useCallback(async (item: any) => {
     if (currentSong?.id === item.id) {
-      router.push("/player");
+      navigation.navigate("Player");
     } else {
       await playSong(item);
-      router.push("/player");
+      navigation.navigate("Player");
     }
-  }, [currentSong?.id, playSong, router]);
+  }, [currentSong?.id, playSong, navigation]);
 
   const renderTabs = () => {
     if (!hasSearched) return null;
@@ -250,14 +250,11 @@ export default function SearchScreen() {
       return (
         <TouchableOpacity 
           style={styles.resultItem} 
-          onPress={() => router.push({
-            pathname: "/artist/[id]",
-            params: {
-              id: item.id,
-              name: item.title,
-              image: typeof imageUrl === 'string' ? imageUrl : '',
-              detailText: "1 Album | 20 Songs" // Simulated info until fetched
-            }
+          onPress={() => navigation.navigate("Artist", {
+            id: item.id,
+            name: item.title,
+            image: typeof imageUrl === 'string' ? imageUrl : '',
+            detailText: "1 Album | 20 Songs" // Simulated info until fetched
           })}
         >
           {imageUrl ? (
@@ -283,14 +280,11 @@ export default function SearchScreen() {
       return (
         <TouchableOpacity 
           style={styles.resultItem}
-          onPress={() => router.push({
-            pathname: "/album/[id]",
-            params: {
-              id: item.id,
-              name: item.title,
-              image: typeof imageUrl === 'string' ? imageUrl : '',
-              detailText: `${item.artist || "Unknown"} | ${item.year || "2023"}`
-            }
+          onPress={() => navigation.navigate("Album", {
+            id: item.id,
+            name: item.title,
+            image: typeof imageUrl === 'string' ? imageUrl : '',
+            detailText: `${item.artist || "Unknown"} | ${item.year || "2023"}`
           })}
         >
           {imageUrl ? (
@@ -343,7 +337,7 @@ export default function SearchScreen() {
         
         {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <ArrowLeft size={28} color={isDark ? "#FFFFFF" : "#000000"} />
           </TouchableOpacity>
           <View

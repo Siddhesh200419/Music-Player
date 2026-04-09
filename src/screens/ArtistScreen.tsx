@@ -1,7 +1,7 @@
 import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { 
   ArrowLeft, ArrowRightCircle, Heart, Info, ListPlus, 
   MoreHorizontal, MoreVertical, Music, Pause, PhoneCall, 
@@ -21,48 +21,67 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function AlbumScreen() {
-  const router = useRouter();
+export default function ArtistScreen() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
 
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [actionModalVisible, setActionModalVisible] = useState(false);
   const [selectedActionSong, setSelectedActionSong] = useState<any>(null);
 
-  const params = useLocalSearchParams();
+  const params = route.params || {};
   const { id, name, image, detailText } = params as { id: string; name: string; image: string; detailText: string };
 
   useEffect(() => {
-    fetchAlbum();
+    fetchSongs(0);
   }, [id]);
 
-  const fetchAlbum = async () => {
-    setLoading(true);
+  const fetchSongs = async (pageNumber: number) => {
+    if (pageNumber === 0) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      // Fetch the actual album data
-      const result = await apiService.getAlbumById(id);
-      if (result && result.songs) {
-        setSongs(result.songs);
+      const results = await apiService.getArtistSongs(id, pageNumber, 10);
+      if (results && results.length > 0) {
+        if (pageNumber === 0) {
+          setSongs(results);
+        } else {
+          setSongs((prev) => [...prev, ...results]);
+        }
+        setPage(pageNumber);
+      } else {
+        setHasMore(false);
       }
     } catch (error) {
-      console.error("Failed to load album:", error);
+      console.error(error);
     } finally {
-      setLoading(false);
+      if (pageNumber === 0) setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore && !loading) {
+      fetchSongs(page + 1);
+    }
+  }, [loadingMore, hasMore, loading, page]);
+
   const handleSongPress = useCallback(async (item: any) => {
     if (currentSong?.id === item.id) {
-      router.push("/player");
+      navigation.navigate("Player");
     } else {
       await playSong(item);
-      router.push("/player");
+      navigation.navigate("Player");
     }
-  }, [currentSong?.id, playSong, router]);
+  }, [currentSong?.id, playSong, navigation]);
 
   const handlePlayButtonPress = async (e: any, item: any) => {
     e.stopPropagation();
@@ -129,6 +148,15 @@ export default function AlbumScreen() {
     );
   }, [currentSong?.id, isPlaying, isDark, handleSongPress]);
 
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#FF8216" />
+      </View>
+    );
+  };
+
   const renderHeader = () => (
     <View style={styles.listHeader}>
       <View style={styles.artistProfileSection}>
@@ -136,14 +164,12 @@ export default function AlbumScreen() {
           <Image source={{ uri: image }} style={styles.heroImage} />
         ) : (
           <View style={[styles.heroImage, { backgroundColor: "#333", justifyContent: "center", alignItems: "center" }]}>
-            <Music size={60} color="#666" />
+            <User size={60} color="#666" />
           </View>
         )}
 
         <Text style={[styles.heroName, { color: isDark ? "#FFFFFF" : "#000000" }]}>{name}</Text>
-        <Text style={[styles.heroDetails, { color: isDark ? "#A0A0A0" : "#616161" }]}>
-          {songs.length > 0 ? `${songs.length} Songs` : detailText}
-        </Text>
+        <Text style={[styles.heroDetails, { color: isDark ? "#A0A0A0" : "#616161" }]}>{detailText}</Text>
 
         <View style={styles.heroActionButtons}>
           <TouchableOpacity style={styles.shuffleButton}>
@@ -174,10 +200,11 @@ export default function AlbumScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#121212" : "#FFFFFF" }]}>
+
+        {/* NAVBAR */}
         <View style={styles.navHeader}>
-          <TouchableOpacity style={styles.navButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.navButton} onPress={() => navigation.goBack()}>
             <ArrowLeft size={28} color={isDark ? "#FFFFFF" : "#000000"} />
           </TouchableOpacity>
           <View style={styles.navRight}>
@@ -190,7 +217,7 @@ export default function AlbumScreen() {
           </View>
         </View>
 
-        {loading ? (
+        {loading && page === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF8216" />
           </View>
@@ -200,7 +227,10 @@ export default function AlbumScreen() {
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item.id}-${index}`}
             contentContainerStyle={styles.listContent}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
             ListHeaderComponent={renderHeader}
+            ListFooterComponent={renderFooter}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={5}
@@ -322,6 +352,7 @@ const styles = StyleSheet.create({
   navIconBorder: {
     padding: 8,
     borderRadius: 20,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -441,6 +472,10 @@ const styles = StyleSheet.create({
   },
   moreButtonList: {
     padding: 8,
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
   },
   actionModalOverlay: {
     flex: 1,

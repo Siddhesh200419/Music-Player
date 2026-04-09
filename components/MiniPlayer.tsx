@@ -1,24 +1,21 @@
 import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { usePathname, useRouter, useSegments } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { Music, Pause, Play, SkipForward } from "lucide-react-native";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function MiniPlayer() {
+export default function MiniPlayer({ currentRouteName }: { currentRouteName?: string }) {
   const { currentSong, isPlaying, pauseSong, resumeSong, playbackStatus } =
     useMusic();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const router = useRouter();
-  const pathname = usePathname();
-  const segments = useSegments();
+  const navigation = useNavigation<any>();
 
-  // If we are essentially inside the bottom tabs layout, we need to lift it up 60px
-  const isTabBarScreen = segments[0] === "(tabs)";
+  const isTabBarScreen = currentRouteName ? ["Home", "Favorites", "Playlists", "Settings"].includes(currentRouteName) : false;
   const bottomPosition = isTabBarScreen ? 60 : 0;
 
   // Don't show MiniPlayer on the full player screen
-  if (!currentSong || pathname === "/player") return null;
+  if (!currentSong || currentRouteName === "Player") return null;
 
   const imageUrl = currentSong.image?.[0]?.url || currentSong.image?.[0]?.link;
   const primaryArtists =
@@ -39,7 +36,7 @@ export default function MiniPlayer() {
           bottom: bottomPosition 
         },
       ]}
-      onPress={() => router.push("/player")}
+      onPress={() => navigation.navigate("Player")}
       activeOpacity={0.9}
     >
       <View style={[styles.progressLine, { width: `${progressPercent}%` }]} />

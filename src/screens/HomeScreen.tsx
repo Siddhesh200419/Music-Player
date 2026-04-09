@@ -3,9 +3,9 @@ import HomeArtists from "@/components/home/HomeArtists";
 import HomeSongs from "@/components/home/HomeSongs";
 import HomeSuggested from "@/components/home/HomeSuggested";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useNavigation } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
 import { Music, Search } from "lucide-react-native";
 import {
   Platform,
@@ -20,7 +20,7 @@ const Tab = createMaterialTopTabNavigator();
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const router = useRouter();
+  const navigation = useNavigation<any>();
 
   return (
     <View
@@ -41,7 +41,7 @@ export default function HomeScreen() {
         </View>
         <TouchableOpacity
           style={styles.searchButton}
-          onPress={() => router.push("/search")}
+          onPress={() => navigation.navigate("Search")}
         >
           <Search size={24} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>

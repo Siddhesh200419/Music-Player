@@ -1,7 +1,7 @@
 import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import {
   ArrowRightCircle,
   Heart,
@@ -36,7 +36,7 @@ export default function HomeSongs() {
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong } =
     useMusic();
-  const router = useRouter();
+  const navigation = useNavigation<any>();
 
   const [isSortModalVisible, setSortModalVisible] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Ascending");
@@ -72,10 +72,10 @@ export default function HomeSongs() {
 
   const handleSongPress = async (item: any) => {
     if (currentSong?.id === item.id) {
-      router.push("/player");
+      navigation.navigate("Player");
     } else {
       await playSong(item);
-      router.push("/player");
+      navigation.navigate("Player");
     }
   };
 
