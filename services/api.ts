@@ -88,4 +88,16 @@ export const apiService = {
       throw error;
     }
   },
+
+  getAlbumById: async (id: string) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/albums`, {
+        params: { id },
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error getting album details:", error);
+      throw error;
+    }
+  },
 };

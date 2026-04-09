@@ -21,57 +21,39 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function ArtistScreen() {
+export default function AlbumScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
 
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
 
   const [actionModalVisible, setActionModalVisible] = useState(false);
   const [selectedActionSong, setSelectedActionSong] = useState<any>(null);
 
+  const params = useLocalSearchParams();
   const { id, name, image, detailText } = params as { id: string; name: string; image: string; detailText: string };
 
   useEffect(() => {
-    fetchSongs(0);
+    fetchAlbum();
   }, [id]);
 
-  const fetchSongs = async (pageNumber: number) => {
-    if (pageNumber === 0) setLoading(true);
-    else setLoadingMore(true);
-
+  const fetchAlbum = async () => {
+    setLoading(true);
     try {
-      const results = await apiService.getArtistSongs(id, pageNumber, 10);
-      if (results && results.length > 0) {
-        if (pageNumber === 0) {
-          setSongs(results);
-        } else {
-          setSongs((prev) => [...prev, ...results]);
-        }
-        setPage(pageNumber);
-      } else {
-        setHasMore(false);
+      // Fetch the actual album data
+      const result = await apiService.getAlbumById(id);
+      if (result && result.songs) {
+        setSongs(result.songs);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to load album:", error);
     } finally {
-      if (pageNumber === 0) setLoading(false);
-      setLoadingMore(false);
+      setLoading(false);
     }
   };
-
-  const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore && !loading) {
-      fetchSongs(page + 1);
-    }
-  }, [loadingMore, hasMore, loading, page]);
 
   const handleSongPress = useCallback(async (item: any) => {
     if (currentSong?.id === item.id) {
@@ -147,15 +129,6 @@ export default function ArtistScreen() {
     );
   }, [currentSong?.id, isPlaying, isDark, handleSongPress]);
 
-  const renderFooter = () => {
-    if (!loadingMore) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#FF8216" />
-      </View>
-    );
-  };
-
   const renderHeader = () => (
     <View style={styles.listHeader}>
       <View style={styles.artistProfileSection}>
@@ -163,12 +136,14 @@ export default function ArtistScreen() {
           <Image source={{ uri: image }} style={styles.heroImage} />
         ) : (
           <View style={[styles.heroImage, { backgroundColor: "#333", justifyContent: "center", alignItems: "center" }]}>
-            <User size={60} color="#666" />
+            <Music size={60} color="#666" />
           </View>
         )}
 
         <Text style={[styles.heroName, { color: isDark ? "#FFFFFF" : "#000000" }]}>{name}</Text>
-        <Text style={[styles.heroDetails, { color: isDark ? "#A0A0A0" : "#616161" }]}>{detailText}</Text>
+        <Text style={[styles.heroDetails, { color: isDark ? "#A0A0A0" : "#616161" }]}>
+          {songs.length > 0 ? `${songs.length} Songs` : detailText}
+        </Text>
 
         <View style={styles.heroActionButtons}>
           <TouchableOpacity style={styles.shuffleButton}>
@@ -199,13 +174,8 @@ export default function ArtistScreen() {
 
   return (
     <>
-      {/* Hides the default Expo Router header that was overlapping with the status bar */}
       <Stack.Screen options={{ headerShown: false }} />
-
-      {/* SafeAreaView automatically handles top inset for all devices (notch, dynamic island, etc.) */}
       <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#121212" : "#FFFFFF" }]}>
-
-        {/* NAVBAR */}
         <View style={styles.navHeader}>
           <TouchableOpacity style={styles.navButton} onPress={() => router.back()}>
             <ArrowLeft size={28} color={isDark ? "#FFFFFF" : "#000000"} />
@@ -220,7 +190,7 @@ export default function ArtistScreen() {
           </View>
         </View>
 
-        {loading && page === 0 ? (
+        {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF8216" />
           </View>
@@ -230,10 +200,7 @@ export default function ArtistScreen() {
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item.id}-${index}`}
             contentContainerStyle={styles.listContent}
-            onEndReached={loadMore}
-            onEndReachedThreshold={0.5}
             ListHeaderComponent={renderHeader}
-            ListFooterComponent={renderFooter}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={5}
@@ -355,7 +322,6 @@ const styles = StyleSheet.create({
   navIconBorder: {
     padding: 8,
     borderRadius: 20,
-    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -475,10 +441,6 @@ const styles = StyleSheet.create({
   },
   moreButtonList: {
     padding: 8,
-  },
-  footerLoader: {
-    paddingVertical: 20,
-    alignItems: "center",
   },
   actionModalOverlay: {
     flex: 1,

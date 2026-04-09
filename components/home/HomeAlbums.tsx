@@ -1,5 +1,6 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
+import { useRouter } from "expo-router";
 import { Disc, MoreVertical } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -21,6 +22,7 @@ export default function HomeAlbums() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const router = useRouter();
 
   useEffect(() => {
     fetchAlbums();
@@ -42,7 +44,20 @@ export default function HomeAlbums() {
       item.image?.[2]?.url || item.image?.[1]?.url || item.image?.[0]?.url;
 
     return (
-      <TouchableOpacity style={styles.albumItem}>
+      <TouchableOpacity 
+        style={styles.albumItem}
+        onPress={() => {
+          router.push({
+            pathname: "/album/[id]",
+            params: {
+              id: item.id || item.title || item.name,
+              name: item.title || item.name,
+              image: typeof imageUrl === 'string' ? imageUrl : '',
+              detailText: `${item.music || item.primaryArtists || "Unknown"} | ${item.year || "2023"}`
+            }
+          });
+        }}
+      >
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.albumImage} />
         ) : (
