@@ -12,7 +12,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 const Tab = createMaterialTopTabNavigator();
@@ -51,10 +51,17 @@ export default function HomeScreen() {
           tabBarActiveTintColor: "#FF8216",
           tabBarInactiveTintColor: isDark ? "#9E9E9E" : "#616161",
           tabBarIndicatorStyle: { backgroundColor: "#FF8216", height: 3 },
+          tabBarScrollEnabled: true,
+          tabBarItemStyle: {
+            width: "auto",
+            paddingHorizontal: 16,
+            minWidth: 90,        // ← prevents text from wrapping
+          },
           tabBarLabelStyle: {
             fontSize: 16,
             fontWeight: "bold",
             textTransform: "none",
+            flexShrink: 0,       // ← stops label from shrinking/wrapping
           },
           tabBarStyle: {
             backgroundColor: isDark ? "#121212" : "#FFFFFF",
