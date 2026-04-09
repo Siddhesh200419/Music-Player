@@ -55,13 +55,12 @@ export default function HomeScreen() {
           tabBarItemStyle: {
             width: "auto",
             paddingHorizontal: 16,
-            minWidth: 90,        // ← prevents text from wrapping
+            minWidth: 100,
           },
           tabBarLabelStyle: {
             fontSize: 16,
             fontWeight: "bold",
             textTransform: "none",
-            flexShrink: 0,       // ← stops label from shrinking/wrapping
           },
           tabBarStyle: {
             backgroundColor: isDark ? "#121212" : "#FFFFFF",

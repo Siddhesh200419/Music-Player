@@ -125,7 +125,15 @@ export default function SearchScreen() {
     if (currentSong?.id === item.id) {
       navigation.navigate("Player");
     } else {
-      await playSong(item);
+      let songToPlay = item;
+      if (!songToPlay.downloadUrl) {
+        try {
+          songToPlay = await apiService.getSongDetails(item.id);
+        } catch (err) {
+          console.error("Failed to fetch song details for playing", err);
+        }
+      }
+      await playSong(songToPlay);
       navigation.navigate("Player");
     }
   }, [currentSong?.id, playSong, navigation]);
@@ -220,7 +228,15 @@ export default function SearchScreen() {
               if (isCurrentSong) {
                 isPlaying ? await pauseSong() : await resumeSong();
               } else {
-                await playSong(item);
+                let songToPlay = item;
+                if (!songToPlay.downloadUrl) {
+                  try {
+                    songToPlay = await apiService.getSongDetails(item.id);
+                  } catch (err) {
+                    console.error("Failed to fetch song details", err);
+                  }
+                }
+                await playSong(songToPlay);
               }
             }}
           >
