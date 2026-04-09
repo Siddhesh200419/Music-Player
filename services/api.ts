@@ -100,4 +100,16 @@ export const apiService = {
       throw error;
     }
   },
+
+  globalSearch: async (query: string) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/search`, {
+        params: { query },
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error in global search:", error);
+      throw error;
+    }
+  },
 };
