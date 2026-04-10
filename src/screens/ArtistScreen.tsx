@@ -1,4 +1,5 @@
-import { useMusic } from "@/context/MusicContext";
+import { useMusicStore } from "@/store/useMusicStore";
+import { useDownloadStore } from "@/store/useDownloadStore";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -26,11 +27,8 @@ export default function ArtistScreen() {
   const route = useRoute<any>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue, playMultiple } = useMusic();
-  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
-
-
-  const [songs, setSongs] = useState<any[]>([]);
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue, playMultiple } = useMusicStore();
+  const { downloadSong, activeDownloads, isDownloaded } = useDownloadStore();  const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);

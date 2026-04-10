@@ -1,4 +1,5 @@
-import { useMusic } from "@/context/MusicContext";
+import { useMusicStore } from "@/store/useMusicStore";
+import { useDownloadStore } from "@/store/useDownloadStore";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
 import { useNavigation } from "@react-navigation/native";
@@ -34,9 +35,8 @@ export default function HomeSongs() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } =
-    useMusic();
-  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusicStore();
+  const { downloadSong, activeDownloads, isDownloaded } = useDownloadStore();
   const navigation = useNavigation<any>();
 
   const [isSortModalVisible, setSortModalVisible] = useState(false);

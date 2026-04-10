@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useMusic } from '@/context/MusicContext';
-import { useDownloads } from '@/context/DownloadContext';
+import { useMusicStore } from '@/store/useMusicStore';
+import { useDownloadStore } from '@/store/useDownloadStore';
 import { Music, Play, Pause, Trash2, ArrowDownCircle } from 'lucide-react-native';
 import Constants from 'expo-constants';
 
 export default function DownloadsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { playMultiple, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
-  const { downloadedSongs, deleteDownload } = useDownloads();
+  const { playMultiple, currentSong, isPlaying, pauseSong, resumeSong } = useMusicStore();
+  const { downloadedSongs, deleteDownload } = useDownloadStore();
 
   const handlePlayButtonPress = async (e: any, item: any, index: number) => {
     e.stopPropagation();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useMusic } from '@/context/MusicContext';
+import { useMusicStore } from '@/store/useMusicStore';
 import { ChevronDown, GripVertical, Trash2, Music } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
@@ -9,7 +9,7 @@ import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function QueueScreen() {
-  const { queue, queueIndex, currentSong, reorderQueue, removeFromQueue, playSong } = useMusic();
+  const { queue, queueIndex, currentSong, reorderQueue, removeFromQueue, playSong } = useMusicStore();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation<any>();

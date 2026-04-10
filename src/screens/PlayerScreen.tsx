@@ -1,4 +1,4 @@
-import { useMusic } from "@/context/MusicContext";
+import { useMusicStore } from "@/store/useMusicStore";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useNavigation } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
@@ -43,7 +43,7 @@ export default function PlayerScreen() {
     playPrevious,
     isRepeatMode,
     toggleRepeatMode,
-  } = useMusic();
+  } = useMusicStore();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const navigation = useNavigation<any>();

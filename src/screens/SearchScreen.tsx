@@ -1,13 +1,18 @@
-import { useMusic } from "@/context/MusicContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
+import { useDownloadStore } from "@/store/useDownloadStore";
+import { useMusicStore } from "@/store/useMusicStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
 import { useNavigation } from "@react-navigation/native";
-import { 
-  ArrowLeft, ArrowRightCircle, ChevronLeft, Disc, Heart, Info, ListPlus, DownloadCloud,
-  MoreHorizontal, MoreVertical, Music, Pause, PhoneCall, 
-  Play, PlayCircle, PlusCircle, Search, Send, Trash2, User, X, XCircle 
+import Constants from "expo-constants";
+import {
+  ArrowLeft, ArrowRightCircle,
+  Disc,
+  DownloadCloud,
+  Heart, Info, ListPlus,
+  MoreVertical, Music, Pause, PhoneCall,
+  Play, PlayCircle,
+  Search, Send, Trash2, User, X, XCircle
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -38,8 +43,8 @@ export default function SearchScreen() {
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusic();
-  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusicStore();
+  const { downloadSong, activeDownloads, isDownloaded } = useDownloadStore();
   const navigation = useNavigation<any>();
 
   // Action Modal State
@@ -360,13 +365,13 @@ export default function SearchScreen() {
           <View
             style={[
               styles.searchContainer,
-              { backgroundColor: isDark ? "#1E1E1E" : "#1E1E1E", borderColor: inputFocused || query.length > 0 ? "#FF8216" : "transparent" },
+              { backgroundColor: isDark ? "#1E1E1E" : "#FFFFFF", borderColor: inputFocused || query.length > 0 ? "#FF8216" : "transparent" },
               (inputFocused || query.length > 0) && styles.searchContainerActive
             ]}
           >
-            <Search size={20} color={isDark ? "#9E9E9E" : "#9E9E9E"} />
+           <Search size={20} color={isDark ? "#9E9E9E" : "#616161"} />
             <TextInput
-              style={[styles.input, { color: isDark ? "#FFFFFF" : "#FFFFFF" }]}
+style={[styles.input, { color: isDark ? "#FFFFFF" : "#000000" }]}
               placeholder="Search..."
               placeholderTextColor={isDark ? "#9E9E9E" : "#9E9E9E"}
               value={query}

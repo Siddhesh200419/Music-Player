@@ -1,12 +1,11 @@
-import { useMusic } from "@/context/MusicContext";
+import { useMusicStore } from "@/store/useMusicStore";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useNavigation } from "@react-navigation/native";
 import { Music, Pause, Play, SkipForward } from "lucide-react-native";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function MiniPlayer({ currentRouteName }: { currentRouteName?: string }) {
-  const { currentSong, isPlaying, pauseSong, resumeSong, playbackStatus } =
-    useMusic();
+  const { currentSong, isPlaying, pauseSong, resumeSong, playbackStatus } = useMusicStore();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const navigation = useNavigation<any>();
