@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useColorScheme } from './hooks/use-color-scheme';
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './components/MiniPlayer';
-import { useMusicStore } from './src/store/useMusicStore';
+import { useMusicStore } from './store/useMusicStore';
 
 export default function App() {
   const colorScheme = useColorScheme();

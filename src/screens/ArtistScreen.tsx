@@ -178,6 +178,7 @@ export default function ArtistScreen() {
               if (songs.length > 0) {
                 const shuffled = [...songs].sort(() => Math.random() - 0.5);
                 playMultiple(shuffled);
+                navigation.navigate("Player");
               }
             }}
           >
@@ -188,7 +189,10 @@ export default function ArtistScreen() {
           <TouchableOpacity
             style={[styles.playMainButton, { backgroundColor: isDark ? "#2A2A2A" : "#FFF3E0" }]}
             onPress={() => {
-              if (songs.length > 0) playMultiple(songs);
+              if (songs.length > 0) {
+                playMultiple(songs);
+                navigation.navigate("Player");
+              }
             }}
           >
             <Play size={20} color="#FF8216" fill="#FF8216" />

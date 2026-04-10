@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "e719faf3-ae16-4d9c-8799-a539fcecbacb"
+      }
+    },
+    "android": {
+      "package": "com.siddhesh_1908.music_app"
+    }
+  }
+}
