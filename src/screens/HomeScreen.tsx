@@ -3,8 +3,8 @@ import HomeArtists from "@/components/home/HomeArtists";
 import HomeSongs from "@/components/home/HomeSongs";
 import HomeSuggested from "@/components/home/HomeSuggested";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useNavigation } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { Music, Search } from "lucide-react-native";
 import {

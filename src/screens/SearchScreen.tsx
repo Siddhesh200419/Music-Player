@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { useNavigation } from "@react-navigation/native";
 import { 
-  ArrowLeft, ArrowRightCircle, ChevronLeft, Disc, Heart, Info, ListPlus, 
+  ArrowLeft, ArrowRightCircle, ChevronLeft, Disc, Heart, Info, ListPlus, DownloadCloud,
   MoreHorizontal, MoreVertical, Music, Pause, PhoneCall, 
   Play, PlayCircle, PlusCircle, Search, Send, Trash2, User, X, XCircle 
 } from "lucide-react-native";
@@ -39,6 +39,7 @@ export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusic();
+  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
   const navigation = useNavigation<any>();
 
   // Action Modal State
@@ -488,16 +489,28 @@ export default function SearchScreen() {
               <TouchableOpacity 
                 style={styles.actionModalItemRow}
                 onPress={() => {
-                  if (selectedActionItem) addToQueue(selectedActionItem);
+                  if (selectedActionSong) addToQueue(selectedActionSong);
                   setActionModalVisible(false);
                 }}
               >
                 <ListPlus size={24} color={isDark ? "#FFFFFF" : "#000000"} />
                 <Text style={[styles.actionModalItemText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playing Queue</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionModalItemRow}>
-                <PlusCircle size={24} color={isDark ? "#FFFFFF" : "#000000"} />
-                <Text style={[styles.actionModalItemText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playlist</Text>
+              <TouchableOpacity 
+                style={styles.actionModalItemRow}
+                onPress={() => {
+                  if (selectedActionSong) downloadSong(selectedActionSong);
+                }}
+                disabled={selectedActionSong && isDownloaded(selectedActionSong.id)}
+              >
+                {selectedActionSong && activeDownloads.includes(selectedActionSong.id) ? (
+                  <ActivityIndicator size="small" color="#FF8216" />
+                ) : (
+                  <DownloadCloud size={24} color={selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : isDark ? "#FFFFFF" : "#000000"} />
+                )}
+                <Text style={[styles.actionModalItemText, { color: selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : isDark ? "#FFFFFF" : "#000000" }]}>
+                  {selectedActionSong && isDownloaded(selectedActionSong.id) ? "Downloaded" : "Download Offline"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionModalItemRow}>
                 <PlayCircle size={24} color={isDark ? "#FFFFFF" : "#000000"} />

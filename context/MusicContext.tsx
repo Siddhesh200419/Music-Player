@@ -129,18 +129,37 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
         await sound.unloadAsync();
       }
 
-      // Find highest quality download URL
-      const audioUrl =
-        song.downloadUrl?.[4]?.url ||
-        song.downloadUrl?.[3]?.url ||
-        song.downloadUrl?.[2]?.url ||
-        song.downloadUrl?.[1]?.url ||
-        song.downloadUrl?.[0]?.url ||
-        song.downloadUrl?.[4]?.link ||
-        song.downloadUrl?.[0]?.link;
+      let audioUrl = "";
+
+      try {
+        // Fetch offline registry mapping smoothly
+        const offlineRegistryData = await AsyncStorage.getItem('downloadedSongs');
+        if (offlineRegistryData) {
+          const offlineRegistry = JSON.parse(offlineRegistryData);
+          const offlineHit = offlineRegistry.find((s: any) => s.id === song.id);
+          if (offlineHit && offlineHit.localUri) {
+            console.log("Playing Offline Song via Storage!", offlineHit.localUri);
+            audioUrl = offlineHit.localUri;
+          }
+        }
+      } catch(e) {
+        // Silent block -- fallbacks to stream
+      }
 
       if (!audioUrl) {
-        console.error("No download URL found for song");
+        // Fallback to highest quality download stream
+        audioUrl =
+          song.downloadUrl?.[4]?.url ||
+          song.downloadUrl?.[3]?.url ||
+          song.downloadUrl?.[2]?.url ||
+          song.downloadUrl?.[1]?.url ||
+          song.downloadUrl?.[0]?.url ||
+          song.downloadUrl?.[4]?.link ||
+          song.downloadUrl?.[0]?.link || "";
+      }
+
+      if (!audioUrl) {
+        console.error("No download URL or local URI found for song");
         return;
       }
 

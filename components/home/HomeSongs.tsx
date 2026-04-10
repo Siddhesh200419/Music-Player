@@ -4,6 +4,7 @@ import { apiService } from "@/services/api";
 import { useNavigation } from "@react-navigation/native";
 import {
   ArrowRightCircle,
+  DownloadCloud,
   Heart,
   Info,
   ListPlus,
@@ -11,7 +12,6 @@ import {
   PhoneCall,
   Play,
   PlayCircle,
-  PlusCircle,
   Send, Trash2,
   User,
   XCircle
@@ -36,6 +36,7 @@ export default function HomeSongs() {
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } =
     useMusic();
+  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
   const navigation = useNavigation<any>();
 
   const [isSortModalVisible, setSortModalVisible] = useState(false);
@@ -300,9 +301,21 @@ export default function HomeSongs() {
                 <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playing Queue</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionModalItem}>
-                <PlusCircle size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playlist</Text>
+              <TouchableOpacity 
+                style={styles.actionModalItem}
+                onPress={() => {
+                  if (selectedActionSong) downloadSong(selectedActionSong);
+                }}
+                disabled={selectedActionSong && isDownloaded(selectedActionSong.id)}
+              >
+                {selectedActionSong && activeDownloads.includes(selectedActionSong.id) ? (
+                  <ActivityIndicator size="small" color="#FF8216" />
+                ) : (
+                  <DownloadCloud size={24} color={selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : modalText} />
+                )}
+                <Text style={[styles.actionModalText, { color: selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : modalText }]}>
+                  {selectedActionSong && isDownloaded(selectedActionSong.id) ? "Downloaded" : "Download Offline"}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>

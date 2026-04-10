@@ -1,12 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useColorScheme } from 'react-native';
-import { Home, Heart, ListMusic, Settings } from 'lucide-react-native';
+import { Home, Heart, ListMusic, Settings, ArrowDownCircle } from 'lucide-react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import PlaylistsScreen from '../screens/PlaylistsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import DownloadsScreen from '../screens/DownloadsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -41,6 +42,13 @@ export default function BottomTabNavigator() {
         component={FavoritesScreen} 
         options={{
           tabBarIcon: ({ color }) => <Heart size={24} color={color} />
+        }}
+      />
+      <Tab.Screen 
+        name="Downloads" 
+        component={DownloadsScreen} 
+        options={{
+          tabBarIcon: ({ color }) => <ArrowDownCircle size={24} color={color} />
         }}
       />
       <Tab.Screen 

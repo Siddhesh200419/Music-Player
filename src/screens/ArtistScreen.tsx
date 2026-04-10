@@ -3,7 +3,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { 
-  ArrowLeft, ArrowRightCircle, Heart, Info, ListPlus, 
+  ArrowLeft, ArrowRightCircle, Heart, Info, ListPlus, DownloadCloud,
   MoreHorizontal, MoreVertical, Music, Pause, PhoneCall, 
   Play, PlayCircle, PlusCircle, Search, Send, Shuffle, Trash2, User, XCircle 
 } from "lucide-react-native";
@@ -27,6 +27,8 @@ export default function ArtistScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue, playMultiple } = useMusic();
+  const { downloadSong, activeDownloads, isDownloaded } = require("@/context/DownloadContext").useDownloads();
+
 
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,9 +300,21 @@ export default function ArtistScreen() {
                 <Text style={[styles.actionModalText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playing Queue</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionModalItem}>
-                <PlusCircle size={24} color={isDark ? "#FFFFFF" : "#000000"} />
-                <Text style={[styles.actionModalText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playlist</Text>
+              <TouchableOpacity 
+                style={styles.actionModalItem}
+                onPress={() => {
+                  if (selectedActionSong) downloadSong(selectedActionSong);
+                }}
+                disabled={selectedActionSong && isDownloaded(selectedActionSong.id)}
+              >
+                {selectedActionSong && activeDownloads.includes(selectedActionSong.id) ? (
+                  <ActivityIndicator size="small" color="#FF8216" />
+                ) : (
+                  <DownloadCloud size={24} color={selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : isDark ? "#FFFFFF" : "#000000"} />
+                )}
+                <Text style={[styles.actionModalText, { color: selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : isDark ? "#FFFFFF" : "#000000" }]}>
+                  {selectedActionSong && isDownloaded(selectedActionSong.id) ? "Downloaded" : "Download Offline"}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>

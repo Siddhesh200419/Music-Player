@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme, DarkTheme, useNavigationContainerRef } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { MusicProvider } from './context/MusicContext';
+import { DownloadProvider } from './context/DownloadContext';
 import { useColorScheme } from './hooks/use-color-scheme';
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './components/MiniPlayer';
@@ -13,9 +14,10 @@ export default function App() {
   const [routeName, setRouteName] = useState<string>();
 
   return (
-    <MusicProvider>
-      <NavigationContainer 
-        ref={navigationRef}
+    <DownloadProvider>
+      <MusicProvider>
+        <NavigationContainer 
+          ref={navigationRef}
         theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         onReady={() => setRouteName(navigationRef.getCurrentRoute()?.name)}
         onStateChange={() => setRouteName(navigationRef.getCurrentRoute()?.name)}
@@ -26,7 +28,8 @@ export default function App() {
         </View>
         <StatusBar style="auto" />
       </NavigationContainer>
-    </MusicProvider>
+      </MusicProvider>
+    </DownloadProvider>
   );
 }
 
