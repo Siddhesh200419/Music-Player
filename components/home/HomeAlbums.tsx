@@ -31,7 +31,18 @@ export default function HomeAlbums() {
   const fetchAlbums = async () => {
     try {
       const results = await apiService.searchAlbums("latest");
-      setAlbums(results);
+      
+      const detailedAlbumsPromises = results.map(async (album: any) => {
+        try {
+          const details = await apiService.getAlbumById(album.id);
+          return { ...album, songCount: details.songCount || details.songs?.length || 0 };
+        } catch (e) {
+          return { ...album, songCount: 0 };
+        }
+      });
+      
+      const detailedAlbums = await Promise.all(detailedAlbumsPromises);
+      setAlbums(detailedAlbums as any);
     } catch (error) {
       console.error(error);
     } finally {
@@ -51,7 +62,7 @@ export default function HomeAlbums() {
             id: item.id || item.title || item.name,
             name: item.title || item.name,
             image: typeof imageUrl === 'string' ? imageUrl : '',
-            detailText: `${item.music || item.primaryArtists || "Unknown"} | ${item.year || "2023"}`
+            detailText: `${item.artists?.primary?.map((a:any) => a.name).join(', ') || item.music || item.primaryArtists || "Unknown"} | ${item.year || "2023"} | ${item.songCount || 0} Song${item.songCount !== 1 ? 's' : ''}`
           });
         }}
       >
@@ -89,8 +100,7 @@ export default function HomeAlbums() {
               ]}
               numberOfLines={1}
             >
-              {item.music || item.primaryArtists || "Unknown"} |{" "}
-              {item.year || "2023"}
+              {item.artists?.primary?.map((a:any) => a.name).join(', ') || item.music || item.primaryArtists || "Unknown"} | {item.year || "2023"}
             </Text>
             <Text
               style={[
@@ -99,7 +109,7 @@ export default function HomeAlbums() {
               ]}
               numberOfLines={1}
             >
-              Album
+              {item.songCount || 0} Song{item.songCount !== 1 ? 's' : ''}
             </Text>
           </View>
           <TouchableOpacity style={styles.moreButton}>

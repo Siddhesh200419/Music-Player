@@ -47,6 +47,21 @@ export const apiService = {
     }
   },
 
+  getArtistCounts: async (id: string) => {
+    try {
+      const [songsRes, albumsRes] = await Promise.all([
+        axios.get(`${BASE_URL}/artists/${id}/songs`, { params: { page: 1, limit: 1 } }),
+        axios.get(`${BASE_URL}/artists/${id}/albums`, { params: { page: 1, limit: 1 } })
+      ]);
+      return {
+        songs: songsRes.data?.data?.total || 0,
+        albums: albumsRes.data?.data?.total || 0
+      };
+    } catch (error) {
+      return { songs: 0, albums: 0 };
+    }
+  },
+
   getTrendingSongs: async () => {
     try {
       const response = await axios.get(`${BASE_URL}/search/songs`, {

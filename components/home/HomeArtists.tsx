@@ -47,7 +47,20 @@ export default function HomeArtists() {
   const fetchArtists = async () => {
     try {
       const results = await apiService.searchArtists("a");
-      setArtists(results);
+      
+      const detailedArtistsPromises = results.map(async (artist: any) => {
+        try {
+          const counts = await apiService.getArtistCounts(artist.id);
+          return { ...artist, aCount: counts.albums, sCount: counts.songs };
+        } catch (e) {
+          return { ...artist, aCount: 0, sCount: 0 };
+        }
+      });
+      
+      const detailedArtists = await Promise.all(detailedArtistsPromises);
+      const filtered = detailedArtists.filter((a: any) => a.aCount > 0 || a.sCount > 0);
+      
+      setArtists(filtered as any);
     } catch (error) {
       console.error(error);
     } finally {
@@ -71,7 +84,10 @@ export default function HomeArtists() {
           id: item.id,
           name: item.title || item.name,
           image: typeof imageUrl === 'string' ? imageUrl : '',
-          detailText: "1 Album | 20 Songs | 01:25:43 mins"
+          detailText: [
+            item.aCount > 0 ? `${item.aCount} Album${item.aCount > 1 ? 's' : ''}` : null,
+            item.sCount > 0 ? `${item.sCount} Song${item.sCount > 1 ? 's' : ''}` : null
+          ].filter(Boolean).join(' | ')
         })}
       >
         {imageUrl && typeof imageUrl === 'string' ? (
@@ -107,7 +123,10 @@ export default function HomeArtists() {
             ]}
             numberOfLines={1}
           >
-            {item.role ? item.role.charAt(0).toUpperCase() + item.role.slice(1) : "Artist"}
+            {[
+              item.aCount > 0 ? `${item.aCount} Album${item.aCount > 1 ? 's' : ''}` : null,
+              item.sCount > 0 ? `${item.sCount} Song${item.sCount > 1 ? 's' : ''}` : null
+            ].filter(Boolean).join(' | ') || (item.role ? item.role.charAt(0).toUpperCase() + item.role.slice(1) : "Artist")}
           </Text>
         </View>
         <TouchableOpacity 
@@ -183,7 +202,10 @@ export default function HomeArtists() {
                     {selectedActionArtist.name || selectedActionArtist.title || "Unknown Artist"}
                   </Text>
                   <Text style={[styles.actionModalArtist, { color: modalSubText }]} numberOfLines={1}>
-                    1 Album | 20 Songs
+                    {[
+                      selectedActionArtist.aCount > 0 ? `${selectedActionArtist.aCount} Album${selectedActionArtist.aCount > 1 ? 's' : ''}` : null,
+                      selectedActionArtist.sCount > 0 ? `${selectedActionArtist.sCount} Song${selectedActionArtist.sCount > 1 ? 's' : ''}` : null
+                    ].filter(Boolean).join(' | ') || "Artist"}
                   </Text>
                 </View>
               </View>
