@@ -26,21 +26,21 @@ npx expo start --clear
 
 ## Architecture Overview
 
-I stepped away from heavy state-management libraries (like Redux or Zustand) and built a deeply integrated **Context API** architecture to manage everything. 
+I utilized **Zustand** as the core state-management library, moving away from standard React Context API to ensure high-performance, background-safe audio processing without triggering massive UI rerenders.
 
 Here are the core pillars:
 
 *   **React Navigation:** The app rests on `@react-navigation/native` (specifically Bottom Tabs and Material Top Tabs). You'll notice a smooth persistent `MiniPlayer` floating above the tab bar.
-*   **The Music Engine (`MusicContext`)**: Built over `expo-av`, this tightly controls the streaming player, the track scrubbing, and the global queuing system. 
-*   **Offline Support (`DownloadContext`)**: The app uses `expo-file-system` to fetch `.m4a` binaries straight into the device's sandbox environment. It intercepts the playback URLs dynamically so if an offline hit is detected, it plays securely off exactly zero internet data!
-*   **Storage**: Handled natively by `@react-native-async-storage/async-storage` for queueing logic, player hydration, and our offline song registries.
+*   **The Music Engine (`useMusicStore`)**: Built over `expo-av`, this tightly controls the streaming player, the track scrubbing, and the global queuing system entirely out of standard React DOM. 
+*   **Offline Support (`useDownloadStore`)**: The app uses `expo-file-system` to fetch `.m4a` binaries straight into the device's sandbox environment. It intercepts the playback URLs dynamically so if an offline hit is detected, it plays securely off exactly zero internet data!
+*   **Storage Automation**: Handled natively by `@react-native-async-storage/async-storage` via Zustand's integrated `persist()` middleware to seamlessly hydrate queue logic, repeating modes, and offline song registries.
 
 ## Trade-offs & Decisions
 
 Building a fast music player forced some structural trade-offs:
 
-1.  **Context vs Redux:** Using pure React Context to manage a heavy, real-time Audio object can result in unnecessary re-renders across consumers if we aren't careful. I opted for Context primarily for speed of iteration and simplicity, mitigating re-renders where possible using strict references and hooks. If the app scales to millions of users, migrating to Zustand or Redux would be a safer bet for isolating UI rerenders from the playback clock.
-2.  **Filesystem Registry vs SQLite:** For offline library management, I simply map `AsyncStorage` JSON items to `expo-file-system` path strings. It's incredibly fast to read/write, but obviously lacks the relational SQL power if we wanted to deeply query "All offline songs by Artist X released in 2021". For our scope, `AsyncStorage` was the lighter, more agile pick.
+1.  **Zustand vs Redux Toolkit:** While Redux is universally known, using pure Zustand to manage a heavy, real-time Audio object results in far less boilerplate and completely eliminates the need for top-down root Providers tying up the App tree. The result is lightning fast synchronous access across hooks.
+2.  **Filesystem Registry vs SQLite:** For offline library management, I simply map `AsyncStorage` JSON items to `expo-file-system` path strings natively via Zustand's persist handlers. It's incredibly fast to read/write, but obviously lacks the relational SQL power if we wanted to deeply query "All offline songs by Artist X released in 2021". For our scope, `AsyncStorage` was the lighter, more agile pick.
 3.  **Shuffle Logic:** We shuffle logic at the client level using random index generators. True server-side shuffled permutations would be tighter, but pushing this to the client saved heavy API roundtripping. 
 
 ---
