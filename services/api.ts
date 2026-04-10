@@ -68,7 +68,6 @@ export const apiService = {
         params: { query: "latest" },
       });
       const songs = response.data.data.results;
-      // Log for debugging
       console.log("API Result:", JSON.stringify(songs[0], null, 2));
       return songs;
     } catch (error) {
@@ -82,9 +81,6 @@ export const apiService = {
       const response = await axios.get(`${BASE_URL}/search/artists`, {
         params: { query, page, limit },
       });
-      // The API structure for artist search might be slightly different
-      // depending on the exact endpoint implementation.
-      // Based on the provided curl and schema, results are inside data.results
       return response.data.data.results || [];
     } catch (error) {
       console.error("Error searching artists:", error);
