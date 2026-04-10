@@ -8,8 +8,13 @@ Watch the full app demo below natively interacting with the API and playing musi
 
 <p align="center">
   <!-- Just drop your video file here and rename the path! -->
-  <video src="./assets/demo.mp4" width="300" controls="controls"></video>
+  <video src="./assets/demo.gif" width="300" controls="controls"></video>
 </p>
+
+## Demo Video Link
+```bash
+https://drive.google.com/file/d/13dFE0MG-CFpFHgquEFdgqACLXDAwcmoG/view?usp=sharing
+```
 
 ## Getting Started
 
