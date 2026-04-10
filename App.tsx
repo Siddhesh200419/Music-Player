@@ -20,7 +20,7 @@ export default function App() {
         onReady={() => setRouteName(navigationRef.getCurrentRoute()?.name)}
         onStateChange={() => setRouteName(navigationRef.getCurrentRoute()?.name)}
       >
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#FFFFFF' }]}>
           <RootNavigator />
           <MiniPlayer currentRouteName={routeName} />
         </View>

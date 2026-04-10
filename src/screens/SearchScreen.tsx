@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
     paddingTop: 10,
   },
   resultItem: {

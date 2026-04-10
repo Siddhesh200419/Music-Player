@@ -11,8 +11,9 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
   const isDark = colorScheme === "dark";
   const navigation = useNavigation<any>();
 
-  const isTabBarScreen = currentRouteName ? ["Home", "Favorites", "Playlists", "Settings"].includes(currentRouteName) : false;
-  const bottomPosition = isTabBarScreen ? 60 : 0;
+  const isTabBarScreen = currentRouteName ? ["Home", "Suggested", "Songs", "Artists", "Albums", "Favorites", "Playlists", "Settings"].includes(currentRouteName) : false;
+  // Make it float slightly above the tab bar like Spotify
+  const bottomPosition = isTabBarScreen ? 68 : 8;
 
   // Don't show MiniPlayer on the full player screen
   if (!currentSong || currentRouteName === "Player") return null;
@@ -32,7 +33,7 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
       style={[
         styles.container,
         { 
-          backgroundColor: isDark ? "#1E1E1E" : "#F5F5F5",
+          backgroundColor: isDark ? "#2C2C2C" : "#F5F5F5", // Slightly distinct dark color for the floating player matching Spotify contrast
           bottom: bottomPosition 
         },
       ]}
@@ -67,7 +68,7 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
             {currentSong.name}
           </Text>
           <Text
-            style={[styles.artist, { color: isDark ? "#9E9E9E" : "#616161" }]}
+            style={[styles.artist, { color: isDark ? "#B3B3B3" : "#616161" }]}
             numberOfLines={1}
           >
             {primaryArtists}
@@ -82,30 +83,11 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
               isPlaying ? pauseSong() : resumeSong();
             }}
           >
-            <View style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: isPlaying ? "#FFE8D6" : "#FF8216",
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              {isPlaying ? (
-                <Pause size={14} color="#FF8216" fill="#FF8216" />
-              ) : (
-                <Play size={14} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 3 }} />
-              )}
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <SkipForward
-              size={24}
-              color={isDark ? "#FFFFFF" : "#000000"}
-              fill={isDark ? "#FFFFFF" : "#000000"}
-            />
+            {isPlaying ? (
+              <Pause size={24} color={isDark ? "#FFFFFF" : "#000000"} fill={isDark ? "#FFFFFF" : "#000000"} />
+            ) : (
+              <Play size={24} color={isDark ? "#FFFFFF" : "#000000"} fill={isDark ? "#FFFFFF" : "#000000"} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -116,34 +98,35 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    height: 60,
-    borderTopWidth: 1,
-    borderTopColor: "#333",
+    left: 8,
+    right: 8,
+    height: 56,
+    borderRadius: 8,
+    overflow: "hidden",
     elevation: 5,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   progressLine: {
     height: 2,
-    backgroundColor: "#FF8216",
+    backgroundColor: "#FFFFFF",
     position: "absolute",
-    top: 0,
+    bottom: 0,
     left: 0,
+    zIndex: 2,
   },
   content: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 15,
+    paddingHorizontal: 8,
     height: "100%",
   },
   albumArt: {
     width: 40,
     height: 40,
-    borderRadius: 8,
+    borderRadius: 4,
   },
   songInfo: {
     flex: 1,
