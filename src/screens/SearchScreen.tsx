@@ -178,7 +178,7 @@ export default function SearchScreen() {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Image 
-        source={{ uri: Image.resolveAssetSource(require("@/assets/images/notfound.png")).uri }} 
+        source={{ uri: Image.resolveAssetSource(require("@/assets/images/notfound.jpg")).uri }} 
         style={styles.emptyImage}
         resizeMode="contain" 
       />
