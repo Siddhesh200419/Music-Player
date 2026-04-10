@@ -39,7 +39,9 @@ export default function MiniPlayer({ currentRouteName }: { currentRouteName?: st
       onPress={() => navigation.navigate("Player")}
       activeOpacity={0.9}
     >
-      <View style={[styles.progressLine, { width: `${progressPercent}%` }]} />
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressLine, { width: `${progressPercent}%` }]} />
+      </View>
 
       <View style={styles.content}>
         {imageUrl ? (
@@ -108,12 +110,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
-  progressLine: {
-    height: 2,
-    backgroundColor: "#FFFFFF",
+  progressContainer: {
+    height: 3,
+    backgroundColor: "rgba(0, 0, 0, 0.1)", // Faint background track
     position: "absolute",
     bottom: 0,
     left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  progressLine: {
+    height: "100%",
+    backgroundColor: "#FF8216", // distinct orange
     zIndex: 2,
   },
   content: {
