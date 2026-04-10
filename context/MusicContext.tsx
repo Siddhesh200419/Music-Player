@@ -1,5 +1,5 @@
 import { Audio } from "expo-av";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Song {
@@ -17,6 +17,7 @@ interface MusicContextType {
   currentSong: Song | null;
   isPlaying: boolean;
   playSong: (song: Song) => Promise<void>;
+  playMultiple: (songs: Song[], startIndex?: number) => Promise<void>;
   pauseSong: () => Promise<void>;
   resumeSong: () => Promise<void>;
   stopSong: () => Promise<void>;
@@ -30,6 +31,8 @@ interface MusicContextType {
   playNext: () => Promise<void>;
   playPrevious: () => Promise<void>;
   clearQueue: () => Promise<void>;
+  isRepeatMode: boolean;
+  toggleRepeatMode: () => void;
 }
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -38,6 +41,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
+
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState<any>(null);
@@ -45,7 +50,19 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
   const [queue, setQueue] = useState<Song[]>([]);
   const [queueIndex, setQueueIndex] = useState<number>(-1);
 
+  const [isRepeatMode, setIsRepeatMode] = useState<boolean>(false);
+  const isRepeatModeRef = useRef<boolean>(false);
+
   const playNextRef = React.useRef<any>(null);
+
+  // Sync refs safely
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
+
+  useEffect(() => {
+    isRepeatModeRef.current = isRepeatMode;
+  }, [isRepeatMode]);
 
   // Load Queue & Current Song from storage on mount
   useEffect(() => {
@@ -55,6 +72,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
         if (parsed.queue) setQueue(parsed.queue);
         if (parsed.queueIndex !== undefined) setQueueIndex(parsed.queueIndex);
         if (parsed.currentSong) setCurrentSong(parsed.currentSong);
+        if (parsed.isRepeatMode !== undefined) setIsRepeatMode(parsed.isRepeatMode);
       }
     }).catch(console.error);
   }, []);
@@ -62,9 +80,9 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
   // Save to storage whenever queue changes
   useEffect(() => {
     if (queue.length > 0 || currentSong) {
-      AsyncStorage.setItem('musicQueue', JSON.stringify({ queue, queueIndex, currentSong })).catch(console.error);
+      AsyncStorage.setItem('musicQueue', JSON.stringify({ queue, queueIndex, currentSong, isRepeatMode })).catch(console.error);
     }
-  }, [queue, queueIndex, currentSong]);
+  }, [queue, queueIndex, currentSong, isRepeatMode]);
 
   useEffect(() => {
     // Enable playback in silence mode / background for iOS and Android
@@ -89,9 +107,14 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsPlaying(status.isPlaying);
       if (status.didJustFinish) {
         setIsPlaying(false);
-        // Invoke the latest playNext through the ref to bypass closure staleness
+        // We use a timeout to ensure state transitions smoothly
         setTimeout(() => {
-          if (playNextRef.current) {
+          if (isRepeatModeRef.current) {
+            // Restart current song
+            if (soundRef.current) {
+              soundRef.current.replayAsync();
+            }
+          } else if (playNextRef.current) {
             playNextRef.current();
           }
         }, 100);
@@ -136,6 +159,13 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error("Error playing song:", error);
     }
+  };
+
+  const playMultiple = async (songs: Song[], startIndex: number = 0) => {
+    if (!songs || songs.length === 0) return;
+    setQueue(songs);
+    setQueueIndex(startIndex);
+    await playSong(songs[startIndex]);
   };
 
   const playNext = async () => {
@@ -226,12 +256,17 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const toggleRepeatMode = () => {
+    setIsRepeatMode(!isRepeatMode);
+  };
+
   return (
     <MusicContext.Provider
       value={{
         currentSong,
         isPlaying,
         playSong,
+        playMultiple,
         pauseSong,
         resumeSong,
         stopSong,
@@ -245,6 +280,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
         playNext,
         playPrevious,
         clearQueue,
+        isRepeatMode,
+        toggleRepeatMode,
       }}
     >
       {children}

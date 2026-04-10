@@ -10,6 +10,7 @@ import {
     MoreVertical,
     Pause,
     Play,
+    Repeat,
     RotateCcw,
     RotateCw,
     SkipBack,
@@ -40,6 +41,8 @@ export default function PlayerScreen() {
     seekTo,
     playNext,
     playPrevious,
+    isRepeatMode,
+    toggleRepeatMode,
   } = useMusic();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -175,6 +178,9 @@ export default function PlayerScreen() {
         </TouchableOpacity>
         <TouchableOpacity>
           <Timer size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleRepeatMode}>
+          <Repeat size={24} color={isRepeatMode ? "#FF8216" : isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("Queue")}>
           <ListMusic size={24} color={isDark ? "#FFFFFF" : "#000000"} />

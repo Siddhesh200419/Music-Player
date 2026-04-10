@@ -26,7 +26,7 @@ export default function AlbumScreen() {
   const route = useRoute<any>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue, playMultiple } = useMusic();
 
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,7 +147,15 @@ export default function AlbumScreen() {
         </Text>
 
         <View style={styles.heroActionButtons}>
-          <TouchableOpacity style={styles.shuffleButton}>
+          <TouchableOpacity 
+            style={styles.shuffleButton}
+            onPress={() => {
+              if (songs.length > 0) {
+                const shuffled = [...songs].sort(() => Math.random() - 0.5);
+                playMultiple(shuffled);
+              }
+            }}
+          >
             <Shuffle size={20} color="#FFFFFF" strokeWidth={2.5} />
             <Text style={styles.shuffleButtonText}>Shuffle</Text>
           </TouchableOpacity>
@@ -155,7 +163,7 @@ export default function AlbumScreen() {
           <TouchableOpacity
             style={[styles.playMainButton, { backgroundColor: isDark ? "#2A2A2A" : "#FFF3E0" }]}
             onPress={() => {
-              if (songs.length > 0) playSong(songs[0]);
+              if (songs.length > 0) playMultiple(songs);
             }}
           >
             <Play size={20} color="#FF8216" fill="#FF8216" />
