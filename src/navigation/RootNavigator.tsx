@@ -5,6 +5,7 @@ import PlayerScreen from '../screens/PlayerScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ArtistScreen from '../screens/ArtistScreen';
 import AlbumScreen from '../screens/AlbumScreen';
+import QueueScreen from '../screens/QueueScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="Artist" component={ArtistScreen} />
       <Stack.Screen name="Album" component={AlbumScreen} />
+      <Stack.Screen name="Queue" component={QueueScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );
 }

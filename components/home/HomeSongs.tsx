@@ -34,7 +34,7 @@ export default function HomeSongs() {
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong } =
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } =
     useMusic();
   const navigation = useNavigation<any>();
 
@@ -289,7 +289,13 @@ export default function HomeSongs() {
                 <Text style={[styles.actionModalText, { color: modalText }]}>Play Next</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionModalItem}>
+              <TouchableOpacity 
+                style={styles.actionModalItem}
+                onPress={() => {
+                  if (selectedActionSong) addToQueue(selectedActionSong);
+                  setActionModalVisible(false);
+                }}
+              >
                 <ListPlus size={24} color={modalText} />
                 <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playing Queue</Text>
               </TouchableOpacity>

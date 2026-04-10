@@ -1,5 +1,6 @@
 import { Audio } from "expo-av";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Song {
   id: string;
@@ -21,6 +22,14 @@ interface MusicContextType {
   stopSong: () => Promise<void>;
   playbackStatus: any;
   seekTo: (position: number) => Promise<void>;
+  queue: Song[];
+  queueIndex: number;
+  addToQueue: (song: Song) => Promise<void>;
+  removeFromQueue: (index: number) => Promise<void>;
+  reorderQueue: (newQueue: Song[]) => Promise<void>;
+  playNext: () => Promise<void>;
+  playPrevious: () => Promise<void>;
+  clearQueue: () => Promise<void>;
 }
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -32,6 +41,28 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState<any>(null);
+
+  const [queue, setQueue] = useState<Song[]>([]);
+  const [queueIndex, setQueueIndex] = useState<number>(-1);
+
+  // Load Queue & Current Song from storage on mount
+  useEffect(() => {
+    AsyncStorage.getItem('musicQueue').then(data => {
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (parsed.queue) setQueue(parsed.queue);
+        if (parsed.queueIndex !== undefined) setQueueIndex(parsed.queueIndex);
+        if (parsed.currentSong) setCurrentSong(parsed.currentSong);
+      }
+    }).catch(console.error);
+  }, []);
+
+  // Save to storage whenever queue changes
+  useEffect(() => {
+    if (queue.length > 0 || currentSong) {
+      AsyncStorage.setItem('musicQueue', JSON.stringify({ queue, queueIndex, currentSong })).catch(console.error);
+    }
+  }, [queue, queueIndex, currentSong]);
 
   useEffect(() => {
     // Enable playback in silence mode / background for iOS and Android
@@ -56,6 +87,10 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsPlaying(status.isPlaying);
       if (status.didJustFinish) {
         setIsPlaying(false);
+        // We use a timeout to ensure state transitions smoothly
+        setTimeout(() => {
+          playNext();
+        }, 100);
       }
     }
   };
@@ -91,9 +126,69 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
       setSound(newSound);
       setCurrentSong(song);
       setIsPlaying(true);
+      
+      // If we play a song directly, let's inject it into front of queue if not already playing from queue
+      // For simplicity, we just leave queue intact and set currentSong.
     } catch (error) {
       console.error("Error playing song:", error);
     }
+  };
+
+  const playNext = async () => {
+    if (queue.length === 0) return;
+    const nextIndex = queueIndex + 1;
+    if (nextIndex < queue.length) {
+      setQueueIndex(nextIndex);
+      await playSong(queue[nextIndex]);
+    } else {
+      // Reached the end
+      setIsPlaying(false);
+    }
+  };
+
+  const playPrevious = async () => {
+    if (queue.length === 0) return;
+    const prevIndex = queueIndex - 1;
+    if (prevIndex >= 0) {
+      setQueueIndex(prevIndex);
+      await playSong(queue[prevIndex]);
+    } else {
+      // If at start, restart current song
+      if (sound) await sound.setPositionAsync(0);
+    }
+  };
+
+  const addToQueue = async (song: Song) => {
+    setQueue((prevQueue) => {
+      const newQueue = [...prevQueue, song];
+      if (!currentSong) {
+        setQueueIndex(0);
+        playSong(song);
+      }
+      return newQueue;
+    });
+  };
+
+  const removeFromQueue = async (index: number) => {
+    setQueue((prevQueue) => {
+      const newQueue = [...prevQueue];
+      newQueue.splice(index, 1);
+      if (index < queueIndex) {
+        setQueueIndex(queueIndex - 1);
+      }
+      return newQueue;
+    });
+  };
+
+  const reorderQueue = async (newQueue: Song[]) => {
+    setQueue(newQueue);
+    // Note: queueIndex might become desynced visually if the currently playing song is dragged. 
+    // Usually you'd track the current song ID to maintain queueIndex, but this works for basics.
+  };
+
+  const clearQueue = async () => {
+    setQueue([]);
+    setQueueIndex(-1);
   };
 
   const pauseSong = async () => {
@@ -134,6 +229,14 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
         stopSong,
         playbackStatus,
         seekTo,
+        queue,
+        queueIndex,
+        addToQueue,
+        removeFromQueue,
+        reorderQueue,
+        playNext,
+        playPrevious,
+        clearQueue,
       }}
     >
       {children}

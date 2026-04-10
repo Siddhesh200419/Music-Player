@@ -16,6 +16,7 @@ import {
     SkipForward,
     Timer,
     Music,
+    ListMusic,
 } from "lucide-react-native";
 import {
     Dimensions,
@@ -37,10 +38,12 @@ export default function PlayerScreen() {
     resumeSong,
     playbackStatus,
     seekTo,
+    playNext,
+    playPrevious,
   } = useMusic();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   if (!currentSong) return null;
 
@@ -134,7 +137,7 @@ export default function PlayerScreen() {
       </View>
 
       <View style={styles.controls}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={playPrevious}>
           <SkipBack
             size={32}
             color={isDark ? "#FFFFFF" : "#000000"}
@@ -157,7 +160,7 @@ export default function PlayerScreen() {
         <TouchableOpacity>
           <RotateCw size={28} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={playNext}>
           <SkipForward
             size={32}
             color={isDark ? "#FFFFFF" : "#000000"}
@@ -173,8 +176,8 @@ export default function PlayerScreen() {
         <TouchableOpacity>
           <Timer size={24} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Cast size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+        <TouchableOpacity onPress={() => navigation.navigate("Queue")}>
+          <ListMusic size={24} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
         <TouchableOpacity>
           <MoreVertical size={24} color={isDark ? "#FFFFFF" : "#000000"} />
