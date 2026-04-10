@@ -26,7 +26,7 @@ export default function AlbumScreen() {
   const route = useRoute<any>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusic();
 
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,7 +249,13 @@ export default function AlbumScreen() {
                 <Text style={[styles.actionModalText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Play Next</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionModalItem}>
+              <TouchableOpacity 
+                style={styles.actionModalItem}
+                onPress={() => {
+                  if (selectedActionSong) addToQueue(selectedActionSong);
+                  setActionModalVisible(false);
+                }}
+              >
                 <ListPlus size={24} color={isDark ? "#FFFFFF" : "#000000"} />
                 <Text style={[styles.actionModalText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playing Queue</Text>
               </TouchableOpacity>

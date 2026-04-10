@@ -45,6 +45,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
   const [queue, setQueue] = useState<Song[]>([]);
   const [queueIndex, setQueueIndex] = useState<number>(-1);
 
+  const playNextRef = React.useRef<any>(null);
+
   // Load Queue & Current Song from storage on mount
   useEffect(() => {
     AsyncStorage.getItem('musicQueue').then(data => {
@@ -87,9 +89,11 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsPlaying(status.isPlaying);
       if (status.didJustFinish) {
         setIsPlaying(false);
-        // We use a timeout to ensure state transitions smoothly
+        // Invoke the latest playNext through the ref to bypass closure staleness
         setTimeout(() => {
-          playNext();
+          if (playNextRef.current) {
+            playNextRef.current();
+          }
         }, 100);
       }
     }
@@ -145,6 +149,10 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsPlaying(false);
     }
   };
+
+  React.useEffect(() => {
+    playNextRef.current = playNext;
+  }, [queue, queueIndex, playSong]);
 
   const playPrevious = async () => {
     if (queue.length === 0) return;

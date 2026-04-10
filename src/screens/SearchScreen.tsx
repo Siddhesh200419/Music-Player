@@ -38,7 +38,7 @@ export default function SearchScreen() {
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusic();
   const navigation = useNavigation<any>();
 
   // Action Modal State
@@ -485,7 +485,13 @@ export default function SearchScreen() {
                 <ArrowRightCircle size={24} color={isDark ? "#FFFFFF" : "#000000"} />
                 <Text style={[styles.actionModalItemText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Play Next</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionModalItemRow}>
+              <TouchableOpacity 
+                style={styles.actionModalItemRow}
+                onPress={() => {
+                  if (selectedActionItem) addToQueue(selectedActionItem);
+                  setActionModalVisible(false);
+                }}
+              >
                 <ListPlus size={24} color={isDark ? "#FFFFFF" : "#000000"} />
                 <Text style={[styles.actionModalItemText, { color: isDark ? "#FFFFFF" : "#000000" }]}>Add to Playing Queue</Text>
               </TouchableOpacity>
