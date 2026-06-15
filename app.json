@@ -1,12 +1,33 @@
 {
   "expo": {
+    "name": "Music App",
+    "slug": "music_app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/splash-icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png"
+      },
+      "package": "com.siddhesh_1908.music_app"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
     "extra": {
       "eas": {
         "projectId": "e719faf3-ae16-4d9c-8799-a539fcecbacb"
       }
-    },
-    "android": {
-      "package": "com.siddhesh_1908.music_app"
     }
   }
 }
