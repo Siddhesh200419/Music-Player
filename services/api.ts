@@ -71,10 +71,10 @@ export const apiService = {
     }
   },
 
-  getTrendingSongs: async () => {
+  getTrendingSongs: async (page: number = 1, limit: number = 20) => {
     try {
       const response = await axios.get(`${BASE_URL}/search/songs`, {
-        params: { query: "latest" },
+        params: { query: "latest", page, limit },
       });
       const songs = response.data.data.results;
       // console.log("API Result:", JSON.stringify(songs[0], null, 2));

@@ -1,103 +1,62 @@
-import { useMusicStore } from "@/store/useMusicStore";
-import { useDownloadStore } from "@/store/useDownloadStore";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
+import { useDownloadStore } from "@/store/useDownloadStore";
+import { useMusicStore } from "@/store/useMusicStore";
 import { useNavigation } from "@react-navigation/native";
 import {
-  ArrowRightCircle,
-  DownloadCloud,
-  Heart,
-  Info,
-  ListPlus,
-  MoreVertical, Music, Pause,
-  PhoneCall,
-  Play,
-  PlayCircle,
-  Send, Trash2,
-  User,
-  XCircle
+    ArrowRightCircle,
+    DownloadCloud,
+    Heart,
+    Info,
+    ListPlus,
+    MoreVertical,
+    Music,
+    Pause,
+    PhoneCall,
+    Play,
+    PlayCircle,
+    Send,
+    Trash2,
+    User,
+    XCircle,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-export default function HomeSongs() {
-  const [songs, setSongs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, addToQueue } = useMusicStore();
-  const { downloadSong, activeDownloads, isDownloaded } = useDownloadStore();
-  const navigation = useNavigation<any>();
-
-  const [isSortModalVisible, setSortModalVisible] = useState(false);
-  const [selectedSort, setSelectedSort] = useState("Ascending");
-
-  const [actionModalVisible, setActionModalVisible] = useState(false);
-  const [selectedActionSong, setSelectedActionSong] = useState<any>(null);
-
-  const sortOptions = [
-    "Ascending",
-    "Descending",
-    "Artist",
-    "Album",
-    "Year",
-    "Date Added",
-    "Date Modified",
-    "Composer",
-  ];
-
-  useEffect(() => {
-    fetchSongs();
-  }, []);
-
-  const fetchSongs = async () => {
-    try {
-      const results = await apiService.getTrendingSongs();
-      setSongs(results);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSongPress = async (item: any) => {
-    if (currentSong?.id === item.id) {
-      navigation.navigate("Player");
-    } else {
-      await playSong(item);
-      navigation.navigate("Player");
-    }
-  };
-
-  // Dynamic colors based on theme
-  const modalBg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const modalText = isDark ? "#FFFFFF" : "#000000";
-  const modalSubText = isDark ? "#9E9E9E" : "#616161";
-  const modalDivider = isDark ? "#2A2A2A" : "#F0F0F0";
-  const modalDragHandle = isDark ? "#444444" : "#D3D3D3";
-
-  const renderItem = ({ item }: { item: any }) => {
-    const isCurrentSong = currentSong?.id === item.id;
+// Memoized Song Item Component
+const SongItem = memo(
+  ({
+    item,
+    isCurrentSong,
+    isPlaying,
+    colorScheme,
+    onSongPress,
+    onMorePress,
+  }) => {
     const imageUrl =
       item.image?.[2]?.url || item.image?.[1]?.url || item.image?.[0]?.url;
 
-    const primaryArtists = item.artists?.primary?.map((a: any) => a.name).join(', ') || item.primaryArtists || 'Unknown Artist';
+    const primaryArtists =
+      item.artists?.primary?.map((a: any) => a.name).join(", ") ||
+      item.primaryArtists ||
+      "Unknown Artist";
+
+    const isDark = colorScheme === "dark";
 
     return (
       <TouchableOpacity
         style={styles.songItem}
-        onPress={() => handleSongPress(item)}
+        onPress={() => onSongPress(item)}
       >
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.songImage} />
@@ -123,8 +82,8 @@ export default function HomeSongs() {
                 color: isCurrentSong
                   ? "#FF8216"
                   : isDark
-                  ? "#FFFFFF"
-                  : "#000000",
+                    ? "#FFFFFF"
+                    : "#000000",
               },
             ]}
             numberOfLines={1}
@@ -143,43 +102,168 @@ export default function HomeSongs() {
         </View>
         <TouchableOpacity
           style={styles.playButton}
-          onPress={async (e) => {
+          onPress={(e) => {
             e.stopPropagation();
-            if (isCurrentSong) {
-              isPlaying ? await pauseSong() : await resumeSong();
-            } else {
-              await playSong(item);
-            }
+            onSongPress(item);
           }}
         >
-          <View style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: isCurrentSong && isPlaying ? "#FFE8D6" : "#FF8216",
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor:
+                isCurrentSong && isPlaying ? "#FFE8D6" : "#FF8216",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             {isCurrentSong && isPlaying ? (
               <Pause size={14} color="#FF8216" fill="#FF8216" />
             ) : (
-              <Play size={14} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+              <Play
+                size={14}
+                color="#FFFFFF"
+                fill="#FFFFFF"
+                style={{ marginLeft: 2 }}
+              />
             )}
           </View>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.moreButton}
           onPress={(e) => {
             e.stopPropagation();
-            setSelectedActionSong(item);
-            setActionModalVisible(true);
+            onMorePress(item);
           }}
         >
           <MoreVertical size={20} color={isDark ? "#9E9E9E" : "#616161"} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
+  },
+);
+
+export default function HomeSongs() {
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const {
+    playSong,
+    currentSong,
+    isPlaying,
+    pauseSong,
+    resumeSong,
+    addToQueue,
+  } = useMusicStore();
+  const { downloadSong, activeDownloads, isDownloaded } = useDownloadStore();
+  const navigation = useNavigation<any>();
+
+  const [isSortModalVisible, setSortModalVisible] = useState(false);
+  const [selectedSort, setSelectedSort] = useState("Ascending");
+
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [selectedActionSong, setSelectedActionSong] = useState<any>(null);
+
+  const sortOptions = [
+    "Ascending",
+    "Descending",
+    "Artist",
+    "Album",
+    "Year",
+    "Date Added",
+    "Date Modified",
+    "Composer",
+  ];
+
+  useEffect(() => {
+    fetchSongs(true);
+  }, []);
+
+  const fetchSongs = async (isInitial = false) => {
+    try {
+      if (isInitial) setLoading(true);
+      else setLoadingMore(true);
+
+      const results = await apiService.getTrendingSongs(page, 20);
+
+      if (results && results.length > 0) {
+        const existingIds = new Set(songs.map((song) => song.id));
+        const newSongs = results.filter((song) => !existingIds.has(song.id));
+
+        if (newSongs.length > 0) {
+          setSongs((prev) => (isInitial ? newSongs : [...prev, ...newSongs]));
+          setPage((prev) => prev + 1);
+        }
+
+        if (newSongs.length < results.length) {
+          // If we filtered out duplicates, assume we might be done
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
   };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchSongs(false);
+    }
+  };
+
+  const handleSongPress = useCallback(
+    async (item: any) => {
+      if (currentSong?.id === item.id) {
+        if (isPlaying) {
+          await pauseSong();
+        } else {
+          await resumeSong();
+        }
+      } else {
+        await playSong(item);
+      }
+      navigation.navigate("Player");
+    },
+    [currentSong, isPlaying, playSong, pauseSong, resumeSong, navigation],
+  );
+
+  const handleMorePress = useCallback((item: any) => {
+    setSelectedActionSong(item);
+    setActionModalVisible(true);
+  }, []);
+
+  // Dynamic colors based on theme
+  const modalBg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const modalText = isDark ? "#FFFFFF" : "#000000";
+  const modalSubText = isDark ? "#9E9E9E" : "#616161";
+  const modalDivider = isDark ? "#2A2A2A" : "#F0F0F0";
+  const modalDragHandle = isDark ? "#444444" : "#D3D3D3";
+
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => {
+      return (
+        <SongItem
+          item={item}
+          isCurrentSong={currentSong?.id === item.id}
+          isPlaying={isPlaying}
+          colorScheme={colorScheme}
+          onSongPress={handleSongPress}
+          onMorePress={handleMorePress}
+        />
+      );
+    },
+    [currentSong, isPlaying, colorScheme, handleSongPress, handleMorePress],
+  );
 
   if (loading) {
     return (
@@ -197,11 +281,6 @@ export default function HomeSongs() {
       ]}
     >
       <View style={styles.header}>
-        <Text
-          style={[styles.countText, { color: isDark ? "#FFFFFF" : "#000000" }]}
-        >
-          {songs.length} songs
-        </Text>
         <TouchableOpacity onPress={() => setSortModalVisible(true)}>
           <Text style={styles.sortText}>{selectedSort} ⇅</Text>
         </TouchableOpacity>
@@ -209,8 +288,17 @@ export default function HomeSongs() {
       <FlatList
         data={songs}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         contentContainerStyle={styles.listContent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color="#FF8216" />
+            </View>
+          ) : null
+        }
       />
 
       {/* Sort Modal */}
@@ -220,7 +308,12 @@ export default function HomeSongs() {
           activeOpacity={1}
           onPress={() => setSortModalVisible(false)}
         >
-          <View style={[styles.dropdownMenu, { backgroundColor: isDark ? "#1E1E1E" : "#FFFFFF" }]}>
+          <View
+            style={[
+              styles.dropdownMenu,
+              { backgroundColor: isDark ? "#1E1E1E" : "#FFFFFF" },
+            ]}
+          >
             {sortOptions.map((option, index) => (
               <View key={option}>
                 <TouchableOpacity
@@ -230,15 +323,32 @@ export default function HomeSongs() {
                     setSortModalVisible(false);
                   }}
                 >
-                  <Text style={[styles.dropdownText, { color: isDark ? "#FFFFFF" : "#000000" }]}>
+                  <Text
+                    style={[
+                      styles.dropdownText,
+                      { color: isDark ? "#FFFFFF" : "#000000" },
+                    ]}
+                  >
                     {option}
                   </Text>
-                  <View style={[styles.radioButton, selectedSort === option && styles.radioButtonSelected]}>
-                    {selectedSort === option && <View style={styles.radioButtonInner} />}
+                  <View
+                    style={[
+                      styles.radioButton,
+                      selectedSort === option && styles.radioButtonSelected,
+                    ]}
+                  >
+                    {selectedSort === option && (
+                      <View style={styles.radioButtonInner} />
+                    )}
                   </View>
                 </TouchableOpacity>
                 {index < sortOptions.length - 1 && (
-                  <View style={[styles.dropdownDivider, { backgroundColor: isDark ? "#333333" : "#F0F0F0" }]} />
+                  <View
+                    style={[
+                      styles.dropdownDivider,
+                      { backgroundColor: isDark ? "#333333" : "#F0F0F0" },
+                    ]}
+                  />
                 )}
               </View>
             ))}
@@ -253,27 +363,61 @@ export default function HomeSongs() {
           activeOpacity={1}
           onPress={() => setActionModalVisible(false)}
         >
-          <View style={[styles.actionModalContent, { backgroundColor: modalBg }]}>
-            <View style={[styles.actionModalDragHandle, { backgroundColor: modalDragHandle }]} />
-            
+          <View
+            style={[styles.actionModalContent, { backgroundColor: modalBg }]}
+          >
+            <View
+              style={[
+                styles.actionModalDragHandle,
+                { backgroundColor: modalDragHandle },
+              ]}
+            />
+
             {selectedActionSong && (
               <View style={styles.actionModalHeader}>
-                {selectedActionSong.image?.[2]?.url || selectedActionSong.image?.[1]?.url || selectedActionSong.image?.[0]?.url ? (
+                {selectedActionSong.image?.[2]?.url ||
+                selectedActionSong.image?.[1]?.url ||
+                selectedActionSong.image?.[0]?.url ? (
                   <Image
-                    source={{ uri: selectedActionSong.image?.[2]?.url || selectedActionSong.image?.[1]?.url || selectedActionSong.image?.[0]?.url }}
+                    source={{
+                      uri:
+                        selectedActionSong.image?.[2]?.url ||
+                        selectedActionSong.image?.[1]?.url ||
+                        selectedActionSong.image?.[0]?.url,
+                    }}
                     style={styles.actionModalImage}
                   />
                 ) : (
-                  <View style={[styles.actionModalImage, { backgroundColor: "#333", justifyContent: "center", alignItems: "center" }]}>
+                  <View
+                    style={[
+                      styles.actionModalImage,
+                      {
+                        backgroundColor: "#333",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      },
+                    ]}
+                  >
                     <Music size={24} color="#666" />
                   </View>
                 )}
                 <View style={styles.actionModalInfo}>
-                  <Text style={[styles.actionModalTitle, { color: modalText }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.actionModalTitle, { color: modalText }]}
+                    numberOfLines={1}
+                  >
                     {selectedActionSong.name}
                   </Text>
-                  <Text style={[styles.actionModalArtist, { color: modalSubText }]} numberOfLines={1}>
-                    {selectedActionSong.artists?.primary?.map((a: any) => a.name).join(', ') || selectedActionSong.primaryArtists || 'Unknown Artist'} | 03:50 mins
+                  <Text
+                    style={[styles.actionModalArtist, { color: modalSubText }]}
+                    numberOfLines={1}
+                  >
+                    {selectedActionSong.artists?.primary
+                      ?.map((a: any) => a.name)
+                      .join(", ") ||
+                      selectedActionSong.primaryArtists ||
+                      "Unknown Artist"}{" "}
+                    | 03:50 mins
                   </Text>
                 </View>
                 <TouchableOpacity>
@@ -282,15 +426,22 @@ export default function HomeSongs() {
               </View>
             )}
 
-            <View style={[styles.actionModalDivider, { backgroundColor: modalDivider }]} />
+            <View
+              style={[
+                styles.actionModalDivider,
+                { backgroundColor: modalDivider },
+              ]}
+            />
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity style={styles.actionModalItem}>
                 <ArrowRightCircle size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Play Next</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Play Next
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionModalItem}
                 onPress={() => {
                   if (selectedActionSong) addToQueue(selectedActionSong);
@@ -298,59 +449,98 @@ export default function HomeSongs() {
                 }}
               >
                 <ListPlus size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Add to Playing Queue</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Add to Playing Queue
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionModalItem}
                 onPress={() => {
                   if (selectedActionSong) downloadSong(selectedActionSong);
                 }}
-                disabled={selectedActionSong && isDownloaded(selectedActionSong.id)}
+                disabled={
+                  selectedActionSong && isDownloaded(selectedActionSong.id)
+                }
               >
-                {selectedActionSong && activeDownloads.includes(selectedActionSong.id) ? (
+                {selectedActionSong &&
+                activeDownloads.includes(selectedActionSong.id) ? (
                   <ActivityIndicator size="small" color="#FF8216" />
                 ) : (
-                  <DownloadCloud size={24} color={selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : modalText} />
+                  <DownloadCloud
+                    size={24}
+                    color={
+                      selectedActionSong && isDownloaded(selectedActionSong.id)
+                        ? "#FF8216"
+                        : modalText
+                    }
+                  />
                 )}
-                <Text style={[styles.actionModalText, { color: selectedActionSong && isDownloaded(selectedActionSong.id) ? "#FF8216" : modalText }]}>
-                  {selectedActionSong && isDownloaded(selectedActionSong.id) ? "Downloaded" : "Download Offline"}
+                <Text
+                  style={[
+                    styles.actionModalText,
+                    {
+                      color:
+                        selectedActionSong &&
+                        isDownloaded(selectedActionSong.id)
+                          ? "#FF8216"
+                          : modalText,
+                    },
+                  ]}
+                >
+                  {selectedActionSong && isDownloaded(selectedActionSong.id)
+                    ? "Downloaded"
+                    : "Download Offline"}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <PlayCircle size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Go to Album</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Go to Album
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <User size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Go to Artist</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Go to Artist
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <Info size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Details</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Details
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <PhoneCall size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Set as Ringtone</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Set as Ringtone
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <XCircle size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Add to Blacklist</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Add to Blacklist
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <Send size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Share</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Share
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionModalItem}>
                 <Trash2 size={24} color={modalText} />
-                <Text style={[styles.actionModalText, { color: modalText }]}>Delete from Device</Text>
+                <Text style={[styles.actionModalText, { color: modalText }]}>
+                  Delete from Device
+                </Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -369,15 +559,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     paddingHorizontal: 20,
     paddingVertical: 15,
-  },
-  countText: {
-    fontSize: 18,
-    fontWeight: "bold",
   },
   sortText: {
     color: "#FF8216",
@@ -417,10 +607,10 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   dropdownMenu: {
-    position: 'absolute',
+    position: "absolute",
     top: 180,
     right: 20,
     width: 200,
@@ -433,33 +623,33 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 15,
     paddingHorizontal: 20,
   },
   dropdownText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#FF8216',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#FF8216",
+    justifyContent: "center",
+    alignItems: "center",
   },
   radioButtonSelected: {
-    borderColor: '#FF8216',
+    borderColor: "#FF8216",
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FF8216',
+    backgroundColor: "#FF8216",
   },
   dropdownDivider: {
     height: 1,
@@ -467,26 +657,26 @@ const styles = StyleSheet.create({
   },
   actionModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   actionModalContent: {
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 20,
     paddingBottom: 40,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   actionModalDragHandle: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
   actionModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   actionModalImage: {
@@ -500,7 +690,7 @@ const styles = StyleSheet.create({
   },
   actionModalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   actionModalArtist: {
@@ -508,17 +698,17 @@ const styles = StyleSheet.create({
   },
   actionModalDivider: {
     height: 1,
-    width: '100%',
+    width: "100%",
     marginBottom: 10,
   },
   actionModalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 15,
   },
   actionModalText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginLeft: 15,
   },
 });
